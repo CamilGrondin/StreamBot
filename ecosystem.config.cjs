@@ -1,6 +1,6 @@
 module.exports = {
   apps : [{
-    script: 'src/index.ts',
+    script: 'bun run start',
     watch: '.'
   }],
 
