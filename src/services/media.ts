@@ -15,6 +15,21 @@ export class MediaService {
 		this.youtube = new Youtube();
 	}
 
+	private normalizeHeaders(headers: unknown): Record<string, string> | undefined {
+		if (!headers || typeof headers !== 'object') {
+			return undefined;
+		}
+
+		const result: Record<string, string> = {};
+		for (const [key, value] of Object.entries(headers as Record<string, unknown>)) {
+			if (typeof value === 'string' && value.trim()) {
+				result[key] = value;
+			}
+		}
+
+		return Object.keys(result).length > 0 ? result : undefined;
+	}
+
 	public async resolveMediaSource(url: string): Promise<MediaSource | null> {
 		try {
 			if (url.includes('youtube.com/') || url.includes('youtu.be/')) {
@@ -133,6 +148,7 @@ export class MediaService {
 			if (metadata && metadata.title) {
 				// Get the best available format URL
 				let streamUrl = url;
+				let requestHeaders = this.normalizeHeaders(metadata.http_headers);
 				if (metadata.formats && Array.isArray(metadata.formats) && metadata.formats.length > 0) {
 					// Find the format with both audio and video, preferring higher quality
 					const bestFormat = metadata.formats
@@ -146,13 +162,15 @@ export class MediaService {
 
 					if (bestFormat && bestFormat.url) {
 						streamUrl = bestFormat.url;
+						requestHeaders = this.normalizeHeaders(bestFormat.http_headers) || requestHeaders;
 					}
 				}
 
 				return {
 					url: streamUrl,
 					title: metadata.title,
-					type: 'url'
+					type: 'url',
+					requestHeaders
 				};
 			}
 		} catch (error) {

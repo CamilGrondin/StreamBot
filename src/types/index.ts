@@ -304,6 +304,7 @@ export interface MediaSource {
  	title: string;
  	type: 'youtube' | 'twitch' | 'local' | 'url';
  	isLive?: boolean;
+	requestHeaders?: Record<string, string>;
 }
 
 export interface QueueItem {
@@ -316,6 +317,7 @@ export interface QueueItem {
   	addedAt: Date;
   	originalInput?: string;
   	resolved?: boolean;
+	requestHeaders?: Record<string, string>;
 }
 
 export interface VideoQueue {

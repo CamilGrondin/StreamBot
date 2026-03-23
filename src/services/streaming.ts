@@ -48,7 +48,7 @@ export class StreamingService {
 			const mediaSource = await this.mediaService.resolveMediaSource(videoSource);
 
 			if (mediaSource) {
-				const queueItem = await this.queueService.addToQueue(mediaSource, username);
+				const queueItem = await this.queueService.addToQueue(mediaSource, username, videoSource);
 				await DiscordUtils.sendSuccess(message, `Added to queue: \`${queueItem.title}\``);
 				return true;
 			} else {
@@ -138,6 +138,7 @@ export class StreamingService {
 	private async playVideoFromQueueItem(message: Message, queueItem: QueueItem): Promise<void> {
 		// Ensure queue is marked as playing
 		this.queueService.setPlaying(true);
+		const sourceForPlayback = queueItem.originalInput || queueItem.url;
 
 		// Collect video parameters if respect_video_params is enabled
 		let videoParams = undefined;
@@ -149,7 +150,7 @@ export class StreamingService {
 		logger.info(`Playing from queue: ${queueItem.title} (${queueItem.url})`);
 
 		// Use streaming service to play the video with video parameters
-		await this.playVideo(message, queueItem.url, queueItem.title, videoParams);
+		await this.playVideo(message, sourceForPlayback, queueItem.title, videoParams, queueItem.requestHeaders);
 	}
 
 	private async getVideoParameters(videoUrl: string): Promise<{ width: number, height: number, fps?: number, bitrate?: number } | undefined> {
@@ -332,19 +333,23 @@ export class StreamingService {
 		}
 	}
 
-	private async prepareVideoSource(message: Message, videoSource: string, title?: string): Promise<{ inputForFfmpeg: any, tempFilePath: string | null }> {
+	private async prepareVideoSource(message: Message, videoSource: string, title?: string): Promise<{ inputForFfmpeg: any, tempFilePath: string | null, requestHeaders?: Record<string, string> }> {
 		const mediaSource = await this.mediaService.resolveMediaSource(videoSource);
 
 		if (mediaSource && mediaSource.type === 'youtube' && !mediaSource.isLive) {
 			const tempFilePath = await this.handleDownload(message, videoSource, title);
 			if (tempFilePath) {
-				return { inputForFfmpeg: tempFilePath, tempFilePath };
+				return { inputForFfmpeg: tempFilePath, tempFilePath, requestHeaders: mediaSource.requestHeaders };
 			}
 			// Download failed, throw to stop playback
 			throw new Error('Failed to prepare video source due to download failure.');
 		}
 
-		return { inputForFfmpeg: mediaSource ? mediaSource.url : videoSource, tempFilePath: null };
+		return {
+			inputForFfmpeg: mediaSource ? mediaSource.url : videoSource,
+			tempFilePath: null,
+			requestHeaders: mediaSource?.requestHeaders,
+		};
 	}
 
 	private async executeStreamWorkflow(input: any, options: any, message: Message, title: string, source: string): Promise<void> {
@@ -370,7 +375,13 @@ export class StreamingService {
 		}
 	}
 
-	public async playVideo(message: Message, videoSource: string, title?: string, videoParams?: { width: number, height: number, fps?: number, bitrate?: number }): Promise<void> {
+	public async playVideo(
+		message: Message,
+		videoSource: string,
+		title?: string,
+		videoParams?: { width: number, height: number, fps?: number, bitrate?: number },
+		fallbackHeaders?: Record<string, string>
+	): Promise<void> {
 		const [guildId, channelId] = [config.guildId, config.videoChannelId];
 		this.streamStatus.manualStop = false;
 
@@ -383,13 +394,17 @@ export class StreamingService {
 
 		let tempFile: string | null = null;
 		try {
-			const { inputForFfmpeg, tempFilePath } = await this.prepareVideoSource(message, videoSource, title);
+			const { inputForFfmpeg, tempFilePath, requestHeaders } = await this.prepareVideoSource(message, videoSource, title);
 			tempFile = tempFilePath;
 
 			await this.ensureVoiceConnection(guildId, channelId, title);
 			await DiscordUtils.sendPlaying(message, title || videoSource);
 
 			const streamOpts = this.setupStreamConfiguration(videoParams);
+			const mergedHeaders = { ...(fallbackHeaders || {}), ...(requestHeaders || {}) };
+			if (Object.keys(mergedHeaders).length > 0) {
+				streamOpts.customHeaders = mergedHeaders;
+			}
 			await this.executeStreamWorkflow(inputForFfmpeg, streamOpts, message, title || videoSource, videoSource);
 		} catch (error) {
 			await ErrorUtils.handleError(error, `playing video: ${title || videoSource}`);
