@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import logger from './utils/logger.js';
 import { downloadExecutable, checkForUpdatesAndUpdate } from './utils/yt-dlp.js';
+import { verifyFfmpeg } from './utils/ffmpeg.js';
 
 // Import event handlers
 import { handleReady } from './events/client/ready.js';
@@ -21,8 +22,13 @@ import { QueueService } from './services/queue.js';
 	try {
 		await downloadExecutable();
 		await checkForUpdatesAndUpdate();
+		
+		// Verify ffmpeg is available
+		if (!verifyFfmpeg()) {
+			logger.warn("⚠️  ffmpeg is not available on this system. Video streaming may fail.");
+		}
 	} catch (error) {
-		logger.error("Error during initial yt-dlp setup/update:", error);
+		logger.error("Error during initial setup:", error);
 	}
 })();
 

@@ -1,8 +1,20 @@
 import config from "../config.js";
 import ffmpeg from "fluent-ffmpeg"
 import logger from "./logger.js";
+import { execSync } from "child_process";
 
 const ffmpegRunning: { [key: string]: boolean } = {};
+
+export function verifyFfmpeg(): boolean {
+	try {
+		const version = execSync('ffmpeg -version', { encoding: 'utf-8' });
+		logger.info("✓ ffmpeg verified:", version.split('\n')[0]);
+		return true;
+	} catch (err) {
+		logger.error("✗ ffmpeg not found or not accessible:", err instanceof Error ? err.message : String(err));
+		return false;
+	}
+}
 
 export async function ffmpegScreenshot(video: string): Promise<string[]> {
 	return new Promise<string[]>((resolve, reject) => {

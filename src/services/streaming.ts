@@ -243,7 +243,14 @@ export class StreamingService {
 		command.on("error", (err, stdout, stderr) => {
 			// Don't log error if it's due to manual stop
 			if (!this.streamStatus.manualStop && this.controller && !this.controller.signal.aborted) {
-				logger.error("An error happened with ffmpeg:", err.message);
+				const errorDetails = {
+					message: err?.message || String(err),
+					code: (err as any)?.code,
+					errno: (err as any)?.errno,
+					syscall: (err as any)?.syscall
+				};
+				
+				logger.error("An error happened with ffmpeg:", JSON.stringify(errorDetails));
 				if (stdout) {
 					logger.error("ffmpeg stdout:", stdout);
 				}
