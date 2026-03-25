@@ -14,7 +14,7 @@ module.exports = {
       password : process.env.PASSWORD,
       ref  : 'origin/main',
       repo : 'https://github.com/CamilGrondin/StreamBot.git',
-      path : '/home/camil/Desktop/StreamBot',
+      path : '/root/BOT/Stream/Rave',
       'pre-deploy-local': '',
       'post-deploy' : 'npm install && pm2 reload ecosystem.config.cjs --env production',
       'pre-setup': ''
