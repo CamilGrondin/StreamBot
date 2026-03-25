@@ -1,5 +1,4 @@
-import { password } from "bun";
-import dotenv from "dotenv"
+require("dotenv").config();
 
 module.exports = {
   apps : [{
@@ -10,8 +9,8 @@ module.exports = {
 
   deploy : {
     production : {
-      user : 'camil',
-      host : '10.188.72.97',
+      user : 'root',
+      host : '187.124.116.141',
       password : process.env.PASSWORD,
       ref  : 'origin/main',
       repo : 'https://github.com/CamilGrondin/StreamBot.git',

@@ -217,6 +217,14 @@ VIDEO_CHANNEL_ID="VIDEO_CHANNEL_ID"
 #   ADMIN_IDS="123456789,987654321"
 #   ADMIN_IDS=["123456789","987654321"]
 ADMIN_IDS=["YOUR_USER_ID_HERE"]
+
+# Optional Rich Presence settings for activity image
+# 1) Create a Discord application in Developer Portal
+# 2) Upload activite.png as a Rich Presence asset
+# 3) Use the uploaded asset key below (example: activite)
+ACTIVITY_APPLICATION_ID="YOUR_DISCORD_APPLICATION_ID"
+ACTIVITY_IMAGE_KEY="activite"
+ACTIVITY_IMAGE_TEXT="StreamBot"
 ```
 
 ### 📁 File Management

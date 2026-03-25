@@ -71,6 +71,9 @@ export default {
 	cmdChannelId: process.env.COMMAND_CHANNEL_ID ? process.env.COMMAND_CHANNEL_ID : '',
 	videoChannelId: process.env.VIDEO_CHANNEL_ID ? process.env.VIDEO_CHANNEL_ID : '',
 	adminIds: process.env.ADMIN_IDS ? parseAdminIds(process.env.ADMIN_IDS) : [],
+	activityApplicationId: process.env.ACTIVITY_APPLICATION_ID ? process.env.ACTIVITY_APPLICATION_ID : '',
+	activityImageKey: process.env.ACTIVITY_IMAGE_KEY ? process.env.ACTIVITY_IMAGE_KEY : '',
+	activityImageText: process.env.ACTIVITY_IMAGE_TEXT ? process.env.ACTIVITY_IMAGE_TEXT : '',
 
 	// General options
 	videosDir: process.env.VIDEOS_DIR ? process.env.VIDEOS_DIR : './videos',

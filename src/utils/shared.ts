@@ -7,24 +7,40 @@ import fs from 'fs';
  * Shared utility functions for Discord bot operations
  */
 export const DiscordUtils = {
+	buildWatchingActivity(name: string): ActivityOptions {
+		const activityName = `${name}`;
+		const hasRichPresenceConfig = Boolean(config.activityApplicationId && config.activityImageKey);
+
+		if (!hasRichPresenceConfig) {
+			return {
+				name: activityName,
+				type: 'WATCHING'
+			};
+		}
+
+		return {
+			name: activityName,
+			type: 'WATCHING',
+			applicationId: config.activityApplicationId,
+			assets: {
+				largeImageKey: config.activityImageKey,
+				largeText: config.activityImageText || activityName
+			}
+		} as ActivityOptions;
+	},
+
 	/**
 	 * Create idle status for Discord bot
 	 */
 	status_idle(): ActivityOptions {
-		return {
-			name: config.prefix + "help",
-			type: 'WATCHING'
-		};
+		return this.buildWatchingActivity(config.prefix + "help");
 	},
 
 	/**
 	 * Create watching status for Discord bot
 	 */
 	status_watch(name: string): ActivityOptions {
-		return {
-			name: `${name}`,
-			type: 'WATCHING'
-		};
+		return this.buildWatchingActivity(name);
 	},
 
 	/**
