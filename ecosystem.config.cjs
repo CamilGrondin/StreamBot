@@ -16,8 +16,8 @@ module.exports = {
       repo : 'https://github.com/CamilGrondin/StreamBot.git',
       path : '/root/BOT/Stream/Rave',
       'pre-deploy-local': '',
-      'post-deploy' : 'npm install && pm2 reload ecosystem.config.cjs --env production',
-      'pre-setup': ''
+      'post-deploy' : 'apt-get update && apt-get install -y ffmpeg && bun install && pm2 reload ecosystem.config.cjs --env production',
+      'pre-setup': 'apt-get update && apt-get install -y ffmpeg'
     }
   }
 };
